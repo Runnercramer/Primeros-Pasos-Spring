@@ -7,6 +7,7 @@ import co.com.Platzi.PrimerosPasos.component.ComponentDependency;
 import co.com.Platzi.PrimerosPasos.entity.User;
 import co.com.Platzi.PrimerosPasos.pojo.UserPojo;
 import co.com.Platzi.PrimerosPasos.repository.UserRepository;
+import co.com.Platzi.PrimerosPasos.services.UserService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,8 @@ public class PrimerosPasosApplication implements CommandLineRunner {
     private UserPojo userPojo;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private UserService userService;
 
     @Autowired
     public PrimerosPasosApplication(@Qualifier("componentImplement2") ComponentDependency componentDependency, MyBean myBean, MyBeanWithDependency myBeanWithDependency, MyBeanWithProperties myBeanWithProperties) {
@@ -61,6 +64,19 @@ public class PrimerosPasosApplication implements CommandLineRunner {
 
         userRepository.findByNameLikeOrderByIdDesc("%a%").stream()
                 .forEach(user -> LOGGER.info("Usuario encontrado con like y ordenados: " + user));
+
+        LOGGER.info(userRepository.getAllByBirthdayAndEmail(LocalDate.of(1999, 06, 10), "cristian@mail.com")
+                .orElseThrow(() -> new RuntimeException("No se encontró el usuario")));
+    }
+
+    private void saveWithTransactionalError() {
+        User test1 = new User("Test1", "test1@mail.com", LocalDate.of(1999, 10, 15));
+        User test2 = new User("Test2", "test2@mail.com", LocalDate.of(2000, 11, 23));
+        User test3 = new User("Test3", "test3@mail.com", LocalDate.of(2001, 02, 26));
+
+        List<User> users = Arrays.asList(test1, test2, test3);
+
+        userService.saveTransactional(users);
     }
 
     private void saveUsersInDB() {
